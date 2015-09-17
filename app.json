@@ -11,8 +11,11 @@
   "repository": "https://github.com/rapidloop/mybot",
    "env": {
      "SLACK_BOT_TOKEN": {
-       "description": "Slack auth token. See https://api.slack.com/tokens",
+       "description": "See https://<YOUR ORG>.slack.com/services/new/bot",
        "value": "CHANGEME"
+     },
+     "GO15VENDOREXPERIMENT": {
+       "value": "1"
      }
    }
 }
