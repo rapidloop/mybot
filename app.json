@@ -1,0 +1,18 @@
+{
+  "name": "mybot",
+  "description": "Slack Bot written in Go",
+  "keywords": [
+    "go",
+    "slack"
+  ],
+  "image": "heroku/go",
+  "mount_dir": "src/github.com/rapidloop/mybot",
+  "website": "https://www.opsdash.com/blog/slack-bot-in-golang.html",
+  "repository": "https://github.com/rapidloop/mybot",
+   "env": {
+     "SLACK_BOT_TOKEN": {
+       "description": "Slack auth token. See https://api.slack.com/tokens",
+       "value": "CHANGEME"
+     }
+   }
+}
