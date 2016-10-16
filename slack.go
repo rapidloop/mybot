@@ -55,6 +55,8 @@ func slackStart(token string) (wsurl, id string, err error) {
 	if err != nil {
 		return
 	}
+	defer resp.Body.Close()
+
 	if resp.StatusCode != http.StatusOK {
 		err = fmt.Errorf("API request failed with code %d", resp.StatusCode)
 		return
@@ -63,7 +65,6 @@ func slackStart(token string) (wsurl, id string, err error) {
 	if err != nil {
 		return
 	}
-	defer resp.Body.Close()
 
 	var respObj responseRtmStart
 	err = json.Unmarshal(body, &respObj)
