@@ -36,18 +36,15 @@ import (
 	"golang.org/x/net/websocket"
 )
 
-// These two structures represent the response of the Slack API rtm.start.
+// responseRtmStart represent the response of the Slack API rtm.start.
 // Only some fields are included. The rest are ignored by json.Unmarshal.
-
 type responseRtmStart struct {
-	Ok    bool         `json:"ok"`
-	Error string       `json:"error"`
-	Url   string       `json:"url"`
-	Self  responseSelf `json:"self"`
-}
-
-type responseSelf struct {
-	Id string `json:"id"`
+	Ok    bool   `json:"ok"`
+	Error string `json:"error"`
+	URL   string `json:"url"`
+	Self  struct {
+		ID string `json:"id"`
+	} `json:"self"`
 }
 
 // slackStart does a rtm.start, and returns a websocket URL and user ID. The
@@ -58,15 +55,16 @@ func slackStart(token string) (wsurl, id string, err error) {
 	if err != nil {
 		return
 	}
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		err = fmt.Errorf("API request failed with code %d", resp.StatusCode)
 		return
 	}
 	body, err := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
 	if err != nil {
 		return
 	}
+	defer resp.Body.Close()
+
 	var respObj responseRtmStart
 	err = json.Unmarshal(body, &respObj)
 	if err != nil {
@@ -78,17 +76,16 @@ func slackStart(token string) (wsurl, id string, err error) {
 		return
 	}
 
-	wsurl = respObj.Url
-	id = respObj.Self.Id
+	wsurl = respObj.URL
+	id = respObj.Self.ID
 	return
 }
 
-// These are the messages read off and written into the websocket. Since this
+// Message represents the messages read off and written into the websocket. Since this
 // struct serves as both read and write, we include the "Id" field which is
 // required only for writing.
-
 type Message struct {
-	Id      uint64 `json:"id"`
+	ID      uint64 `json:"id"`
 	Type    string `json:"type"`
 	Channel string `json:"channel"`
 	Text    string `json:"text"`
@@ -102,7 +99,7 @@ func getMessage(ws *websocket.Conn) (m Message, err error) {
 var counter uint64
 
 func postMessage(ws *websocket.Conn, m Message) error {
-	m.Id = atomic.AddUint64(&counter, 1)
+	m.ID = atomic.AddUint64(&counter, 1)
 	return websocket.JSON.Send(ws, m)
 }
 
