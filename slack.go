@@ -89,6 +89,7 @@ type Message struct {
 	ID      uint64 `json:"id"`
 	Type    string `json:"type"`
 	Channel string `json:"channel"`
+	User    string `json:"user"`
 	Text    string `json:"text"`
 }
 
