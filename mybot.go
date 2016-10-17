@@ -51,6 +51,12 @@ func main() {
 			log.Fatal(err)
 		}
 
+		// if there is an error returned, report it and skip this loop.
+		if m.Type == "error" {
+			log.Println(fmt.Errorf("error from Slack on getMessage: code %v\t%s\n", m.Error.Code, m.Error.Message))
+			continue
+		}
+
 		// see if we're mentioned
 		if m.Type == "message" && strings.HasPrefix(m.Text, "<@"+id+">") {
 			// if so try to parse if

@@ -91,6 +91,11 @@ type Message struct {
 	Channel string `json:"channel"`
 	User    string `json:"user"`
 	Text    string `json:"text"`
+	Error   struct {
+		// Error is only populated if an error is present. Check for type == "error"
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+	} `json:"error"`
 }
 
 func getMessage(ws *websocket.Conn) (m Message, err error) {
