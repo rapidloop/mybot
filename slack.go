@@ -32,6 +32,7 @@ import (
 	"log"
 	"net/http"
 	"sync/atomic"
+	"strings"
 
 	"golang.org/x/net/websocket"
 )
@@ -120,4 +121,37 @@ func slackConnect(token string) (*websocket.Conn, string) {
 	}
 
 	return ws, id
+}
+
+
+func slackRun(token string) {
+
+	ws, id := slackConnect(token)
+	fmt.Println("mybot ready, ^C exits")
+
+	for {
+		// read each incoming message
+		m, err := getMessage(ws)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// see if we're mentioned
+		if m.Type == "message" && strings.HasPrefix(m.Text, "<@"+id+">") {
+			// if so try to parse if
+			parts := strings.Fields(m.Text)
+			if len(parts) == 3 && parts[1] == "stock" {
+				// looks good, get the quote and reply with the result
+				go func(m Message) {
+					m.Text = getQuote(parts[2])
+					postMessage(ws, m)
+				}(m)
+				// NOTE: the Message object is copied, this is intentional
+			} else {
+				// huh?
+				m.Text = fmt.Sprintf("sorry, that does not compute\n")
+				postMessage(ws, m)
+			}
+		}
+	}
 }
