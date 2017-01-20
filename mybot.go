@@ -3,6 +3,7 @@
 mybot - Illustrative Slack bot in Go
 
 Copyright (c) 2015 RapidLoop
+Copyright (c) 2017 sndnvaps
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +29,63 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
-	"log"
+	//"log"
 	"net/http"
 	"os"
 	"strings"
+	"github.com/urfave/cli"
+	"time"
 )
 
+
+var (
+	Token string
+)
+
+func actionStartSlack(c *cli.Context) error {
+	if c.String("token") != "" || c.String("t") != "" {
+		slackRun(Token)
+	} else {
+		cli.ShowCommandHelp(c, "start")
+	}
+	return nil
+}
+
+
 func main() {
+	app := cli.NewApp()
+	app.Name = "aiicySlackBot"
+	app.Usage = "Slack bot to get the stock infomation"
+	app.Version = "0.5.0"
+	app.Compiled = time.Now()
+	app.Copyright = "Copyright (c) 2015 RapidLoop\n\t Copyright (c) 2017 sndnvaps<admin@sndnvaps.com>"
+	app.Authors = []cli.Author{
+		cli.Author{
+			Name:  "RapidLoop",
+			Email: "mdevan@gaia.local",
+		},
+	}
+	
+	app.Commands = []cli.Command{
+		{
+			Name:  "start",
+			Usage: "start slack bot",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:        "token,t",
+					Usage:       "myslack bot token",
+					Destination: &Token,
+				},
+			},
+			Action: actionStartSlack,
+		},
+	}
+		
+	if err := app.Run(os.Args); err != nil {
+		os.Exit(1)
+	}
+	
+/*
 	if len(os.Args) != 2 {
 		fmt.Fprintf(os.Stderr, "usage: mybot slack-bot-token\n")
 		os.Exit(1)
@@ -69,6 +120,7 @@ func main() {
 			}
 		}
 	}
+*/
 }
 
 // Get the quote via Yahoo. You should replace this method to something
