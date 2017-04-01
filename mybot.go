@@ -80,6 +80,7 @@ func getQuote(sym string) string {
 	if err != nil {
 		return fmt.Sprintf("error: %v", err)
 	}
+	defer resp.Body.Close()
 	rows, err := csv.NewReader(resp.Body).ReadAll()
 	if err != nil {
 		return fmt.Sprintf("error: %v", err)
