@@ -27,12 +27,38 @@ package main
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 )
+
+const (
+	sTeamInfo = `teamInfo:TBD`
+	sBridge   = ` call 400-800-400`
+	sHr       = ` call 400-800-401`
+)
+
+type WeatherInfoJson struct {
+	Weatherinfo WeatherinfoObject
+}
+
+type WeatherinfoObject struct {
+	City    string
+	CityId  string
+	Temp    string
+	WD      string
+	WS      string
+	SD      string
+	WSE     string
+	Time    string
+	IsRadar string
+	Radar   string
+	Rain    string
+}
 
 func main() {
 	if len(os.Args) != 2 {
@@ -61,7 +87,55 @@ func main() {
 					m.Text = getQuote(parts[2])
 					postMessage(ws, m)
 				}(m)
-				// NOTE: the Message object is copied, this is intentional
+			} else if (len(parts) == 3 && parts[1] == "weather" && parts[2] == "Guangzhou") || (len(parts) == 2 && parts[1] == "weather") {
+				go func(m Message) {
+					resp, err := http.Get("http://www.weather.com.cn/data/sk/101280101.html")
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					defer resp.Body.Close()
+					input, err := ioutil.ReadAll(resp.Body)
+
+					var jsonWeather WeatherInfoJson
+					json.Unmarshal(input, &jsonWeather)
+
+					m.Text = fmt.Sprintf("weatherInfo: \n City:%s \n Wind:%s-%s\n Rain:%s\n Temp:%s\n Time:%s", jsonWeather.Weatherinfo.City, jsonWeather.Weatherinfo.WD, jsonWeather.Weatherinfo.WS, jsonWeather.Weatherinfo.Rain, jsonWeather.Weatherinfo.Temp, jsonWeather.Weatherinfo.Time)
+
+					postMessage(ws, m)
+				}(m)
+			} else if len(parts) == 3 && parts[1] == "weather" && parts[2] == "Beijing" {
+				go func(m Message) {
+					resp, err := http.Get("http://www.weather.com.cn/data/sk/101010100.html")
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					defer resp.Body.Close()
+					input, err := ioutil.ReadAll(resp.Body)
+
+					var jsonWeather WeatherInfoJson
+					json.Unmarshal(input, &jsonWeather)
+
+					m.Text = fmt.Sprintf("weatherInfo: \n City:%s \n Wind:%s-%s\n Rain:%s\n Temp:%s\n Time:%s", jsonWeather.Weatherinfo.City, jsonWeather.Weatherinfo.WD, jsonWeather.Weatherinfo.WS, jsonWeather.Weatherinfo.Rain, jsonWeather.Weatherinfo.Temp, jsonWeather.Weatherinfo.Time)
+
+					postMessage(ws, m)
+				}(m)
+			} else if len(parts) == 2 && parts[1] == "team" {
+				go func(m Message) {
+					m.Text = sTeamInfo
+					postMessage(ws, m)
+				}(m)
+			} else if len(parts) == 2 && parts[1] == "bridge" {
+				go func(m Message) {
+					m.Text = sBridge
+					postMessage(ws, m)
+				}(m)
+			} else if len(parts) == 2 && parts[1] == "hr" {
+				go func(m Message) {
+					m.Text = sHr
+					postMessage(ws, m)
+				}(m)
 			} else {
 				// huh?
 				m.Text = fmt.Sprintf("sorry, that does not compute\n")
